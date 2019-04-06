@@ -3,17 +3,58 @@ Extensions of iterable data types, enabling bounds wise bookmarking indexing and
 Enables iterable passing while preserving bookmarks
 """
 
-def handler:
-    if isinstance(iterable, set):
-        pass
-        # todo extended type acceptance
-        # tuple().__init__()
-    elif isinstance(iterable, list):
-        super().__init__(iterable)
-    elif isinstance(iterable, str):
-        super().__init__([iterable])
-    elif not iterable:
-        super().__init__([])
-    else:
-        raise TypeError("Currently unsupported type")
 
+class _Itermark:
+    def __init__(self, iterable):
+        ...
+
+    def __new__(self, iterable):
+        if isinstance(iterable, dict):
+            from ._dict import ItermarkDict
+            return ItermarkDict(iterable)
+
+        elif isinstance(iterable, list):
+            from ._list import ItermarkList
+            return ItermarkList(iterable)
+
+        elif isinstance(iterable, set):
+            from ._set import ItermarkSet
+            return ItermarkSet(iterable)
+
+        elif isinstance(iterable, str):
+            from ._str import ItermarkStr
+            return ItermarkStr(iterable)
+
+        elif isinstance(iterable, tuple):
+            from ._tuple import ItermarkTuple
+            return ItermarkTuple
+
+        else:
+            raise TypeError(f"Currently unsupported type! \n {type(iterable)}")
+
+
+def Itermark(iterable):
+    # todo this will be what user interacts with. Name appropriately
+
+    if isinstance(iterable, dict):
+        from ._dict import ItermarkDict
+        return ItermarkDict(iterable)
+
+    elif isinstance(iterable, list):
+        from ._list import ItermarkList
+        return ItermarkList(iterable)
+
+    elif isinstance(iterable, set):
+        from ._set import ItermarkSet
+        return ItermarkSet(iterable)
+
+    elif isinstance(iterable, str):
+        from ._str import ItermarkStr
+        return ItermarkStr(iterable)
+
+    elif isinstance(iterable, tuple):
+        from ._tuple import ItermarkTuple
+        return ItermarkTuple
+
+    else:
+        raise TypeError(f"Currently unsupported type! \n {type(iterable)}")

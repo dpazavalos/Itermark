@@ -8,7 +8,7 @@ Enables iterable passing while preserving bookmarks
 from typing import Optional
 
 
-class Itermark:
+class ItermarkEngine:
     """
     Extension of default iterator objects. Stores and preserves a boundwise bookmark
 
@@ -38,22 +38,26 @@ class Itermark:
     @mark.setter
     def mark(self, new_mark: int):
         """
-        Attempts to set active mark, within bounds. OoBs marks are overwritten with closest bound
+        Attempts to set active mark. Raises IndexError if new_mark is out of bounds
 
         Arguments:
             new_mark:
                 Desired new bookmark index
         """
+
         if self._is_loaded():
             if not isinstance(new_mark, int):
                 raise TypeError(f"marklist index must be integer, not {str(type(new_mark))}")
 
             # No negatives. -= 1 fouls up indexing when _mark is 0
             if new_mark < 0:
+                # raise IndexError("No negative indexing currently allowed in Iteramark")
                 self._mark = 0
 
             # Max length check
             elif self._mark >= self.__len__():
+                # print('new mark is too high!')
+                # raise IndexError("Given value above boundary. Use self.last for quick upper bounds "check")
                 self._mark = self.__len__() - 1
 
             else:
@@ -82,7 +86,7 @@ class Itermark:
         if self._is_loaded():
             self[self._mark] = val
 
-    # Itermark maintenance
+    # ItermarkEngine maintenance
 
     def _is_loaded(self) -> bool:
         """Used to prevent itermark functions if iterable is empty. itermark functions call this"""
@@ -103,27 +107,17 @@ class Itermark:
         if self._mark >= self.__len__():
             self._mark = self.__len__() - 1
 
-    def _get_mark_via_iter_obj(self):
-
-        pass
-
-
-
     # Hollow references, to be overwritten by each subtypes' specific version.
-    # Itermark functions will then reference the actual function
+    # ItermarkEngine functions will then reference the actual function
 
     def __len__(self):
-        """Hollow reference. Itermark types use default types first, so this will not overwrite"""
-        pass
+        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
 
     def __iter__(self):
-        """Hollow reference. Itermark types use default types first, so this will not overwrite"""
-        return [1, 2, 3]
+        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
 
     def __getitem__(self):
-        """Hollow reference. Itermark types use default types first, so this will not overwrite"""
-        pass
+        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
 
     def __setitem__(self):
-        """Hollow reference. Itermark types use default types first, so this will not overwrite"""
-        pass
+        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""

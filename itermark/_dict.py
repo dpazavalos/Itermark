@@ -1,40 +1,58 @@
-from ._z_itermark import Itermark
+from ._z_itermark import ItermarkEngine
 from typing import Union
 
 
-class ItermarkDict(dict, Itermark):
-    """Itermark dict object, extending default dict functionality"""
+# todo ordered dict?
+class ItermarkDict(dict, ItermarkEngine):
+    """ItermarkEngine dict object, extending default dict functionality"""
 
     @property
     def active(self) -> any:
         """
-        Get current active key and value, based off bookmark index. Returns as single dict. For key
-        /val specific, see activekey, activeval
+        Get current active val, based off bookmark index. For key, see ItermarkEngine.activekey
 
         Returns:
-                Active item, or None if len=0
+                Active key, or None if len=0
         """
         # Using an iterator object, return the nth item (where n = current _mark)
         if self._is_loaded():
-            for ndx, item in enumerate(self.__iter__()):    # Iterates through keys
+            for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
                 if ndx == self._mark:
-                    return {item: self[item]}
-        return None
+                    return self[key]
 
     @active.setter
-    def active(self, val: Union[any):
+    def active(self, val: Union[any, dict]):
         """
-        Set active dict key, based on current mark value
+        Set active dict value, based on currently marked key
 
         Args:
-            val: new value for current actively marked dict key
+            val: new value for dict val
         """
+
         if self._is_loaded():
-            self[self._mark] = val
+            for ndx, key in enumerate(self.__iter__()):
+                if ndx == self._mark:
+                    self[key] = val
+        # self[self.active] = val
 
 
-def new_itermarkdict():
-    return ItermarkDict()
+            # self[self._mark] = val
+
+    @property
+    def activekey(self):
+        """Get active key, rather than value"""
+        if self._is_loaded():
+            for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
+                if ndx == self._mark:
+                    return key
 
 
-test = {1: 'one', 2: 'two'}
+'''def new_itermarkdict():
+    return ItermarkDict()'''
+
+
+'''
+from itermark import _dict
+test = _dict.ItermarkDict({1: 'one', 2: 'two', 3: 'three'})
+
+'''
