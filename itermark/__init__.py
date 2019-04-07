@@ -2,6 +2,7 @@
 Extensions of iterable data types, enabling bounds wise bookmarking indexing and active item setting
 Enables iterable passing while preserving bookmarks
 """
+from collections import OrderedDict
 
 
 class _Itermark:
@@ -9,11 +10,16 @@ class _Itermark:
         ...
 
     def __new__(self, iterable):
-        if isinstance(iterable, dict):
+
+        if isinstance(iterable, list):
+            from ._list import ItermarkList
+            return ItermarkList(iterable)
+
+        elif isinstance(iterable, dict):
             from ._dict import ItermarkDict
             return ItermarkDict(iterable)
 
-        elif isinstance(iterable, list):
+        elif isinstance(iterable, OrderedDict):
             from ._list import ItermarkList
             return ItermarkList(iterable)
 
@@ -30,6 +36,7 @@ class _Itermark:
             return ItermarkTuple
 
         else:
+            # special cases for more colletions?
             raise TypeError(f"Currently unsupported type! \n {type(iterable)}")
 
 

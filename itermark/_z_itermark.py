@@ -31,7 +31,7 @@ class ItermarkEngine:
         Returns:
                 Active bookmark index, or None if len=0
         """
-        if self._is_loaded():
+        if self._is_loaded:
             return self._mark
         return None
 
@@ -45,7 +45,7 @@ class ItermarkEngine:
                 Desired new bookmark index
         """
 
-        if self._is_loaded():
+        if self._is_loaded:
             if not isinstance(new_mark, int):
                 raise TypeError(f"marklist index must be integer, not {str(type(new_mark))}")
 
@@ -71,7 +71,7 @@ class ItermarkEngine:
         Returns:
                 Active item, or None if len=0
         """
-        if self._is_loaded():
+        if self._is_loaded:
             return self[self._mark]
         return None
 
@@ -83,11 +83,12 @@ class ItermarkEngine:
         Args:
             val: new value for current active item
         """
-        if self._is_loaded():
+        if self._is_loaded:
             self[self._mark] = val
 
     # ItermarkEngine maintenance
 
+    @property
     def _is_loaded(self) -> bool:
         """Used to prevent itermark functions if iterable is empty. itermark functions call this"""
         if self.__len__() == 0:
@@ -111,13 +112,13 @@ class ItermarkEngine:
     # ItermarkEngine functions will then reference the actual function
 
     def __len__(self):
-        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
+        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
 
     def __iter__(self):
-        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
+        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
 
     def __getitem__(self):
-        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
+        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
 
     def __setitem__(self):
-        """Hollow reference. ItermarkEngine types use default types first, so this will not overwrite"""
+        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
