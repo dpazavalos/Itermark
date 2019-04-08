@@ -1,4 +1,4 @@
-from ._z_itermark import ItermarkEngine
+from ._z_itermark_engine import ItermarkEngine
 
 
 # Note that this is designed around 3.6+'s insertion ordered dictionaries
@@ -41,3 +41,8 @@ class ItermarkDict(dict, ItermarkEngine):
             for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
                 if ndx == self._mark:
                     return key
+
+    @activekey.setter
+    def activekey(self, val):
+        raise TypeError("ItermarkDict object does not support key assignment")
+

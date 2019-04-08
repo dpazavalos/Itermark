@@ -1,9 +1,9 @@
-from ._z_itermark import ItermarkEngine
+from ._z_itermark_engine import ItermarkEngine
 
 
 class ItermarkSet(set, ItermarkEngine):
     """ItermarkEngine set object, Adding bookmarking functionality"""
-    # I don't know why this exists. Iterating through a set with a bookmark makes no senes
+    # I don't know why this exists. Iterating through a set with a bookmark makes no sense
 
     @property
     def active(self) -> any:
@@ -18,3 +18,7 @@ class ItermarkSet(set, ItermarkEngine):
             for ndx, key in enumerate(self.__iter__()):  # Iterates through keys
                 if ndx == self._mark:
                     return key
+
+    @active.setter
+    def active(self, val):
+        raise TypeError("ItermarkSet object does not support item assignment")

@@ -56,8 +56,8 @@ class ItermarkEngine:
 
             # Max length check
             elif self._mark >= self.__len__():
-                # print('new mark is too high!')
-                # raise IndexError("Given value above boundary. Use self.last for quick upper bounds "check")
+                # raise IndexError("Given value above boundary
+                # Use self.last for quick upper bounds "check")
                 self._mark = self.__len__() - 1
 
             else:
