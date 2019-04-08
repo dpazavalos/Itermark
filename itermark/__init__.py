@@ -7,8 +7,8 @@ from collections import OrderedDict
 
 def Itermark(iterable):
     """
-    Extensions for iterable data types, stores and preserves boudwise bookmarking indexing and
-    for active item tracking and setting (type allowing)
+    Extensions for iterable data types, enabling boudwise bookmarking and
+    active item tracking/ and setting (type allowing)
     Whole itermark obj can be passed, preserving bookmark
 
     - mark: Bookmark index of underlying iterable. Supports direct and operator assignment
@@ -29,7 +29,7 @@ def Itermark(iterable):
         from ._ordict import ItermarkOrDict         # Liskov Substitution Principle re dict types
         return ItermarkOrDict(iterable)             # isinstance(OrderedDict(), dict) == True
     # See commented out rough draft classful solution below, for possibly scalable solution
-    elif type(iterable) == type({}):
+    elif type(iterable) == type({}):    # standard dict
         from ._dict import ItermarkDict
         return ItermarkDict(iterable)
 

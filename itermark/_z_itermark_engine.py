@@ -1,8 +1,8 @@
 """
 Base engine for itermark functionality.
 
-Extensions of iterable data types, enabling bounds wise bookmarking indexing and active item setting
-Enables iterable passing while preserving bookmarks
+Extension for iterable data types; adds boundwise bookmark iteration, enabling active item
+tracking/setting (type allowing)
 """
 
 from typing import Optional
@@ -10,18 +10,14 @@ from typing import Optional
 
 class ItermarkEngine:
     """
-    Extension of default iterator objects. Stores and preserves a boundwise bookmark
-
-    Extension of default iterable obj. Stores and preserves a bound wise bookmarking index that will
-    never go outside of the underlying iterable's boundaries.
-    Whole iterable can be passed between objects with bookmark
+    Base engine, inhereted by type specific implementations
 
     - mark: Bookmark index of underlying iterable. Supports direct and operator assignment
-    - active: Active item, based off current mark index. Allows read/write usage
+    - active: Active item, based off current mark index. Read/write usage, type allowing
     """
 
     _mark = None
-    """Protected bookmark index; access via property mark"""
+    """Protected bookmark index; access via property mark so boundary checks are run"""
 
     @property
     def mark(self) -> Optional[int]:
@@ -51,15 +47,10 @@ class ItermarkEngine:
 
             # No negatives. -= 1 fouls up indexing when _mark is 0
             if new_mark < 0:
-                # raise IndexError("No negative indexing currently allowed in Iteramark")
-                self._mark = 0
-
+                self.markstart()
             # Max length check
-            elif self._mark >= self.__len__():
-                # raise IndexError("Given value above boundary
-                # Use self.last for quick upper bounds "check")
-                self._mark = self.__len__() - 1
-
+            elif self._mark_is_over_bounds(new_mark):
+                self.markend()
             else:
                 self._mark = new_mark
 
@@ -86,11 +77,19 @@ class ItermarkEngine:
         if self._is_loaded:
             self[self._mark] = val
 
+    def markend(self):
+        """
+        Set mark to end value. Mark will never go above upper bound, but without calling len() user may not
+        know what that upper bound is. Use .markend() to reliably set mark to upper bound
+        """
+        if self._is_loaded:
+            self.mark = self.__len__()
+
     # ItermarkEngine maintenance
 
     @property
     def _is_loaded(self) -> bool:
-        """Used to prevent itermark functions if iterable is empty. itermark functions call this"""
+        """Property to shutdown itermark functions if iterable is empty"""
         if self.__len__() == 0:
             self._deactivate_mark()
             return False
@@ -100,13 +99,29 @@ class ItermarkEngine:
     def _deactivate_mark(self):
         """Used to disable callable attributes, if iterable becomes empty"""
         self._mark = None
+        # .active is never stored, instead called from _mark
 
     def _activate_mark(self):
         """Ensures _ndx is activated and within bounds. Iterable is assumed non-empty"""
         if not self._mark or self._mark < 0:
             self._mark = 0
-        if self._mark >= self.__len__():
-            self._mark = self.__len__() - 1
+        if self._mark_is_over_bounds():
+            self.markend()
+
+    def _mark_is_over_bounds(self, mark_check=None):
+        """
+        Funnel function, verify if mark_check is within bounds of upper length. Default self._mark
+        Typically followed by self.markend()
+
+        Args:
+            mark_check: Mark to check. Defaults to self._mark, but can be passed an externally given
+            mark instead
+        Returns:
+            Bool, indicating if mark is >= self.__len__
+        """
+        if not mark_check:
+            mark_check = self._mark
+        return mark_check >= self.__len__()
 
     # Hollow references, to be overwritten by each subtypes' specific version.
     # ItermarkEngine functions will then reference the actual function
