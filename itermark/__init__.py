@@ -42,7 +42,7 @@ def Itermark(iterable):
         return ItermarkStr(iterable)
 
     elif isinstance(iterable, tuple):
-        from ._tuple import ItermarkTuple
+        from ._tuple import     ItermarkTuple
         return ItermarkTuple
 
     else:
