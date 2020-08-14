@@ -1,0 +1,2 @@
+class ItermarkError(Exception):
+    pass

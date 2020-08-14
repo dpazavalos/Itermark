@@ -1,8 +1,8 @@
-from ._z_itermark_engine import ItermarkEngine
+from ._z_itermark_engine import _ItermarkEngine
 
 
-class ItermarkSet(set, ItermarkEngine):
-    """ItermarkEngine set object, Adding bookmarking functionality"""
+class ItermarkSet(set, _ItermarkEngine):
+    """_ItermarkEngine set object, Adding bookmarking functionality"""
     # I don't know why this exists. Iterating through a set with a bookmark makes no sense
 
     @property
@@ -14,7 +14,7 @@ class ItermarkSet(set, ItermarkEngine):
                 Active item, or None if len=0
         """
         # Using an iterator object, return the nth item (where n = current _mark)
-        if self._is_loaded:
+        if self._ensure_loaded:
             for ndx, key in enumerate(self.__iter__()):  # Iterates through keys
                 if ndx == self._mark:
                     return key

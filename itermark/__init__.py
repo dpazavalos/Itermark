@@ -29,6 +29,7 @@ def Itermark(iterable):
         from ._ordict import ItermarkOrDict         # Liskov Substitution Principle re dict types
         return ItermarkOrDict(iterable)             # isinstance(OrderedDict(), dict) == True
     # See commented out rough draft classful solution below, for possibly scalable solution
+
     elif type(iterable) == type({}):    # standard dict
         from ._dict import ItermarkDict
         return ItermarkDict(iterable)
@@ -42,8 +43,8 @@ def Itermark(iterable):
         return ItermarkStr(iterable)
 
     elif isinstance(iterable, tuple):
-        from ._tuple import     ItermarkTuple
-        return ItermarkTuple
+        from ._tuple import ItermarkTuple
+        return ItermarkTuple(iterable)
 
     else:
         raise TypeError(f"Currently unsupported type! \n {type(iterable)}")

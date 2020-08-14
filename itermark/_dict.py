@@ -1,21 +1,22 @@
-from ._z_itermark_engine import ItermarkEngine
+from ._z_itermark_engine import _ItermarkEngine
+# todo warning if using Dict on python <3.6
 
 
 # Note that this is designed around 3.6+'s insertion ordered dictionaries
 # Recommend a Collections.OrderedDict for earlier implementations
-class ItermarkDict(dict, ItermarkEngine):
-    """ItermarkEngine dict object, extending default dict functionality"""
+class ItermarkDict(dict, _ItermarkEngine):
+    """_ItermarkEngine dict object, extending default dict functionality"""
 
     @property
     def active(self) -> any:
         """
-        Get current active val, based off bookmark index. For key, see ItermarkEngine.activekey
+        Get current active val, based off bookmark index. For key, see _ItermarkEngine.activekey
 
         Returns:
                 Active key, or None if len=0
         """
         # Using an iterator object, return the nth item (where n = current _mark)
-        if self._is_loaded:
+        if self._ensure_loaded:
             for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
                 if ndx == self._mark:
                     return self[key]
@@ -29,7 +30,7 @@ class ItermarkDict(dict, ItermarkEngine):
             val: new value for dict val
         """
 
-        if self._is_loaded:
+        if self._ensure_loaded:
             for ndx, key in enumerate(self.__iter__()):
                 if ndx == self._mark:
                     self[key] = val
@@ -37,7 +38,7 @@ class ItermarkDict(dict, ItermarkEngine):
     @property
     def activekey(self):
         """Get active key, rather than value"""
-        if self._is_loaded:
+        if self._ensure_loaded:
             for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
                 if ndx == self._mark:
                     return key
