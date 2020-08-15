@@ -51,9 +51,6 @@ Dict specific, retrieved value based on current .activekey
 
 ##### `list`
 Original implementation, full mark and active usage
-
-##### `tuple
-No active assignment
 `
 ##### `dict`
 Uses iterator gen for mark and active properties. `activekey` calls immutable
@@ -62,11 +59,8 @@ Uses iterator gen for mark and active properties. `activekey` calls immutable
 ##### `OrderedDict`
 Same features as a regular dict, but for pre 3.6 implementation
 
-##### `string`
-Sure, strings are just a list of characters
-
-##### `set`
-Read only use, similar to list. To preserve quick read/ref of a Set, 
+##### `tuple
+No active assignment 
 
 ## Notes
 Itermark Indicator is enforced to ensure desired outcome of IndexError when

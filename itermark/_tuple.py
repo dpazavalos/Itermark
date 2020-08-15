@@ -6,7 +6,7 @@ class ItermarkTuple(tuple, _ItermarkEngine):
 
     @property
     def active(self):
-        """Call to super Engine's active property. Here for setter's reference"""
+        """Call to super's active property. Here for setter's reference"""
         return super(_ItermarkEngine).active
 
     @active.setter
