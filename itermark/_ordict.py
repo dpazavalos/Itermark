@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from ._dict import ItermarkDict
-# from . import ItermarkIndicator
 
 
 class ItermarkOrDict(ItermarkDict, OrderedDict):

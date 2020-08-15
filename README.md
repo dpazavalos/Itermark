@@ -73,33 +73,39 @@ im(_sample_tupl)
 
 ## Properties
 
-##### `mark` 
+### `mark` 
 Bookmark index, can be assigned a value directly (`itermarklist.mark = 2`) or
  by 
  operator assignment (`itermarklist.mark += 1`)
 
-##### `active` 
+### `active` 
 Retrieves item based on current mark. `itermarklist[mark]`. On dicts/OrderedDicts
  returns `{.activekey: .activeval}` 
 
-##### `activekey` 
+### `activekey` 
 Dict specific, retrieves nth key from dictonary type where self.mark = n
  Note that itermark was made post 3.6's insertion ordered dicts. While
   itermark properties still work pre 3.6, collections.OrderedDict is
    recommended
 
-##### `activeval`
+### `activeval`
 Dict specific, retrieved value based on current .activekey 
 
-#### `next()`
+### `next()`
 Emulation of an iterable's `__next__` functionality. Iterates from current
  `.mark` to end, and throws StopIteration at end while preserving obj. (Not
   meant to be as fast as actual iteration obj)
 
 ## Supported types
 
-##### `list`
+### `list`
 Original implementation, full mark and active usage
+
+#### Default functions with Itermark support
+##### `clear()`
+##### `remove()`
+##### `pop()`
+##### `reverse()`
 `
 ##### `dict`
 Uses iterator gen for mark and active properties. `activekey` calls immutable
@@ -115,3 +121,9 @@ No active assignment
 Unintended side effect: OrderedDicts show up as `ItermarkOrDict`. While it
  looks nice, it does not assist in tracking lower bounds. Development is not
   seeking to replicate among default types at this time
+  
+Itermark extendsdefault types, however some default types will naturally not 
+ play well with Itermark, esp in regards to ItermarkIndicator.  If a builtin 
+  function moves or removes ItermarkIndicator, itermark can no longer
+   track lower bound and when decrementing will loop from 0 to -1. Work in 
+    progress on extending default functions with itermark support on each type

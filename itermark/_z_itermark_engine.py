@@ -140,8 +140,6 @@ class _ItermarkEngine:
     def _calc_if_negative_index(self, mark_to_calc: int) -> int:
         """Converts a negative index to actual index"""
         if mark_to_calc < 0:
-            if self._mark == 0:
-                print('DEVELOPMENT: Should be a catch elsewhere for mark=0...')
             return self.__len__() + mark_to_calc
         return mark_to_calc
 
