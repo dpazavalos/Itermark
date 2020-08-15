@@ -7,10 +7,7 @@ active item tracking/setting (type allowing)
 
 from typing import Optional
 from ._z_itermark_exceptions import ItermarkError
-
-
-class ItermarkIndicator:
-    """Indication that item is itermark. Equipped on index 0"""
+from . import ItermarkIndicator
 
 
 class _ItermarkEngine:
@@ -37,9 +34,16 @@ class _ItermarkEngine:
     def __str__(self):
         return str(self[1:-1])"""
 
-    def __setitem__(self, key, value):
+    """def __setitem__(self, key, value):
         if key == 0:
             raise ItermarkError("Cannot change or remove Itermark Indicator!")
+        super().__setitem__(key, value)"""
+
+    def __setitem__(self, key, value):
+        if key == 0:
+            if value != ItermarkIndicator:
+                raise ItermarkError(
+                    "Cannot change or remove Itermark Indicator!")
         super().__setitem__(key, value)
 
     def __next__(self):
@@ -118,25 +122,26 @@ class _ItermarkEngine:
         """Ensures items exist for itermark to track. If none,
         throws excpetion ItermarkNonActive.  All public functions call this
          first; calling itermark funcs on non-existent self throws errors"""
-        self._ensure_placeholder_exists()
+        # self._ensure_placeholder_exists()
         if self._is_loaded:
             self._activate_mark()
         else:
             self._deactivate_mark()
             raise ItermarkError("No items for itermark to track!")
 
-    def _ensure_placeholder_exists(self):
-        """Due to quirk in assignment operators, """
-        if not isinstance(self[0], ItermarkIndicator):
+    # def _ensure_placeholder_exists(self):
+        # """Due to quirk in assignment operators, """
+        # return
+        # if not isinstance(self[0], ItermarkIndicator):
             # self.insert(0, _ItermarkPlaceHolder())
-            self.insert(0, ItermarkIndicator)
+            # self.insert(0, ItermarkIndicator)
 
     @property
     def _is_loaded(self) -> bool:
         """bool representing if items exist in self, using __len__ check.
         Seperate from _ensure_loaded so maint funcs can run a check without
         de/activating or causing recursive loop"""
-        if self.__len__() == 0:
+        if self.__len__() <= 1:
             return False
         return True
 
@@ -164,5 +169,5 @@ class _ItermarkEngine:
         if not self._mark:
             self._mark = 1
         elif self._mark not in self._mark_range:
-            raise IndexError(f"Mark [{self._mark}] out of bounds [0-"
+            raise IndexError(f"Mark [{self._mark}] out of bounds [1-"
                              f"{self._mark_range[-1]}]")

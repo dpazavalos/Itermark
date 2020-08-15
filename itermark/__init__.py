@@ -5,6 +5,9 @@ Enables iterable passing while preserving bookmarks
 from collections import OrderedDict
 
 
+class ItermarkIndicator:
+    """Indication that item is itermark. Equipped on index 0"""
+
 def Itermark(iterable):
     """
     Extensions for iterable data types, enabling boudwise bookmarking and
@@ -20,17 +23,23 @@ def Itermark(iterable):
     Returns:
         Itermark object, matching the given iterable type
     """
+    # todo separate elif into functions
 
     if isinstance(iterable, list):
+        iterable = [ItermarkIndicator] + iterable
         from ._list import ItermarkList
         return ItermarkList(iterable)
 
     elif type(iterable) == type(OrderedDict()):     # Type compares used to avoid issues with
+        new_dict = {0: ItermarkIndicator}
+        new_dict.update(iterable)
         from ._ordict import ItermarkOrDict         # Liskov Substitution Principle re dict types
         return ItermarkOrDict(iterable)             # isinstance(OrderedDict(), dict) == True
     # See commented out rough draft classful solution below, for possibly scalable solution
 
-    elif type(iterable) == type({}):    # standard dict
+    elif isinstance(iterable, dict):    # standard dict
+        new_dict = {0: ItermarkIndicator}
+        new_dict.update(iterable)
         from ._dict import ItermarkDict
         return ItermarkDict(iterable)
 

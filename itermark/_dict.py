@@ -8,8 +8,7 @@ from ._z_itermark_engine import _ItermarkEngine, ItermarkIndicator, \
 class ItermarkDict(_ItermarkEngine, dict):
     """_ItermarkEngine dict object, extending default dict functionality"""
 
-    def _ensure_placeholder_exists(self):
-        """"""
+    """def _ensure_placeholder_exists(self):
         try:
             if self[0] is not ItermarkIndicator:
                 raise ItermarkError('iterable cannot contain key [0]!')
@@ -17,7 +16,7 @@ class ItermarkDict(_ItermarkEngine, dict):
             new_dict = {0: ItermarkIndicator}
             new_dict.update(self)
             self.clear()
-            self.update(new_dict)
+            self.update(new_dict)"""
 
     @property
     def active(self) -> dict:
