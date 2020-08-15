@@ -1,4 +1,5 @@
-from ._z_itermark_engine import _ItermarkEngine
+from ._z_itermark_engine import _ItermarkEngine, ItermarkIndicator, \
+    ItermarkError
 # todo warning if using Dict on python <3.6
 
 
@@ -7,43 +8,44 @@ from ._z_itermark_engine import _ItermarkEngine
 class ItermarkDict(dict, _ItermarkEngine):
     """_ItermarkEngine dict object, extending default dict functionality"""
 
-    @property
-    def active(self) -> any:
-        """
-        Get current active val, based off bookmark index. For key, see _ItermarkEngine.activekey
+    def _ensure_placeholder_exists(self):
+        """"""
+        try:
+            if self[0] is not ItermarkIndicator:
+                raise ItermarkError('iterable cannot contain key [0]!')
+        except KeyError:
+            new_dict = {0: ItermarkIndicator}
+            new_dict.update(self)
+            self.clear()
+            self.update(new_dict)
 
-        Returns:
-                Active key, or None if len=0
-        """
-        # Using an iterator object, return the nth item (where n = current _mark)
-        if self._ensure_loaded:
-            for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
-                if ndx == self._mark:
-                    return self[key]
+    @property
+    def active(self) -> dict:
+        self._ensure_loaded()
+        return {self.activekey: self.activeval}
 
     @active.setter
-    def active(self, val: any):
-        """
-        Set active dict value, based on currently marked key
-
-        Args:
-            val: new value for dict val
-        """
-
-        if self._ensure_loaded:
-            for ndx, key in enumerate(self.__iter__()):
-                if ndx == self._mark:
-                    self[key] = val
+    def active(self, val):
+        raise TypeError("Set using .activeval, .activekey immutable!")
 
     @property
     def activekey(self):
-        """Get active key, rather than value"""
-        if self._ensure_loaded:
-            for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
-                if ndx == self._mark:
-                    return key
+        """Get active key, based on bookmark"""
+        self._ensure_loaded()
+        for ndx, key in enumerate(self.__iter__()):    # Iterates through keys
+            if ndx == self._mark:
+                return key
 
     @activekey.setter
-    def activekey(self, val):
-        raise TypeError("ItermarkDict object does not support key assignment")
+    def activekey(self, key):
+        raise TypeError("ItermarkDict does not support key assignment")
 
+    @property
+    def activeval(self):
+        self._ensure_loaded()
+        return self[self.activekey]
+
+    @activeval.setter
+    def activeval(self, val):
+        self._ensure_loaded()
+        self[self.activekey] = val
