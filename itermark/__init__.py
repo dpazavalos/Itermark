@@ -3,11 +3,14 @@ Extensions of iterable data types, enabling bounds wise bookmarking indexing and
 Enables iterable passing while preserving bookmarks
 """
 from collections import OrderedDict
-from ._z_itermark_exceptions import ItermarkError
 
 
 class ItermarkIndicator:
     """Indication that item is itermark. Equipped on index 0"""
+
+
+class ItermarkError(Exception):
+    """Generic Exception for general Itermark engine usage"""
 
 
 def Itermark(iterable):
@@ -56,4 +59,4 @@ def Itermark(iterable):
         return ItermarkTuple(new_tup)
 
     else:
-        raise ItermarkError(f"Currently unsupported type! \n {type(iterable)}")
+        raise TypeError(f"Currently unsupported type! \n {type(iterable)}")

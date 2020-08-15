@@ -2,50 +2,99 @@
 Bookmark extension for iterable data types; adds bounds aware bookmark
  enabling active item read/write (type allowing)
 
-Ideal for 'paging' through iterables
+Ideal for 'paging' through lists/dicts/tuples
 
 ## Installation
 ```
 pip install itermark
 ```
 
-## Using Itermark
+## Usage
  ```python
->>> from itermark import Itermark
->>> iterlist = Itermark(['one', 'two', 'three', 'four'])
->>> next(iterlist)
-'one'
->>> iterlist.active
-2
->>> iterlist.mark += 2
->>> iterlist.active
-'four'
->>> iterlist.mark = 6   # Would put mark outside active index
-IndexError: Given mark [6] outside index range 1-5 
->>> iterlist.active = 'FOUR'
->>> print(iterlist)
-['one', 'two', 'three', 'four']
+from itermark import Itermark as im
+itermark_list = im(['one', 'two'])
+itermark_list
+# [<class 'itermark.ItermarkIndicator'>, 'one', 'two']
+
+next(itermark_list)
+# 'one'
+next(itermark_list)
+# 'two'
+next(itermark_list)
+# StopIteration: End of itermark iteration. set mark to -1 or reset to 1
+
+itermark_list.mark = -1
+itermark_list.active
+# 'two'
+
+itermark_list.mark += 2
+# IndexError: Mark [4] out of bounds [1-2]
+# 'four'
+
+itermark_list.mark
+# 2
+
+itermark_list.active = 'TWO'
+print(itermark_list)
+# [<class 'itermark.ItermarkIndicator'>, 'one', 'TWO']
 ```
-The Itermark extension adds properties .mark and .active (and .activekey/
- .activeval for dicts), and an IteratorIndicator object inserted at the
-  beginning of the iterable. Itermark properties are disabled if underlying
-   iterable is empty  
+The Itermark extension adds properties `.mark` and `.active` (and `.activekey`/
+ `.activeval` for dicts) as a bookmark/active item reference. 
+ 
+Immutable obj `ItermarkIndicator` is inserted at `[0]` to track lower
+ bounds. `.mark` and `.active` return None if only entry in iterable is
+  `ItermarkIndicator`
+
+## Types
+```python
+from itermark import Itermark as im
+from collections import OrderedDict
+
+_sample_list = [1, 2, 3]
+_sample_dict = {1: 'one', 2: 'two', 3: 'three'}
+_sample_ordr = OrderedDict(_sample_dict)        # for pre 3.6 implementation
+_sample_tupl = (1, 2, 3)
+
+im(_sample_list)
+# [<class 'itermark.ItermarkIndicator'>, 1, 2, 3]
+
+im(_sample_dict)
+# {0: <class 'itermark.ItermarkIndicator'>, 1: 'one', 2: 'two', 3: 'three'}
+
+im(_sample_ordr)
+# ItermarkOrDict([
+#     (0, <class 'itermark.ItermarkIndicator'>), 
+#     (1, 'one'), (2, 'two'), (3, 'three')
+# ])
+
+im(_sample_tupl)
+# (<class 'itermark.ItermarkIndicator'>, 1, 2, 3)
+```
+
+## Properties
 
 ##### `mark` 
-Acts as a bookmark index, and can be assigned a value directly (`iterlist.mark
- = 2`) or by operator assignment (`iterlist.mark += 1`, `iterlist.mark -= 1`)
+Bookmark index, can be assigned a value directly (`itermarklist.mark = 2`) or
+ by 
+ operator assignment (`itermarklist.mark += 1`)
 
 ##### `active` 
-Retrieves item based on current mark. `list[mark]`
+Retrieves item based on current mark. `itermarklist[mark]`. On dicts/OrderedDicts
+ returns `{.activekey: .activeval}` 
 
 ##### `activekey` 
 Dict specific, retrieves nth key from dictonary type where self.mark = n
  Note that itermark was made post 3.6's insertion ordered dicts. While
   itermark properties still work pre 3.6, collections.OrderedDict is
-   recommended and supported
+   recommended
 
 ##### `activeval`
 Dict specific, retrieved value based on current .activekey 
+
+#### `next()`
+Emulation of an iterable's `__next__` functionality. Iterates from current
+ `.mark` to end, and throws StopIteration at end while preserving obj. (Not
+  meant to be as fast as actual iteration obj)
 
 ## Supported types
 
@@ -62,8 +111,7 @@ Same features as a regular dict, but for pre 3.6 implementation
 ##### `tuple
 No active assignment 
 
-## Notes
-Itermark Indicator is enforced to ensure desired outcome of IndexError when
- trying to decrement below lowest given entry. Without Indicator, itermark
-  loops from 0 to final entry, and loses lower bound awareness
- 
+## Bugs
+Unintended side effect: OrderedDicts show up as `ItermarkOrDict`. While it
+ looks nice, it does not assist in tracking lower bounds. Development is not
+  seeking to replicate among default types at this time

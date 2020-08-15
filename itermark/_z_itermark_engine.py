@@ -6,8 +6,7 @@ active item tracking/setting (type allowing)
 """
 
 from typing import Optional
-from ._z_itermark_exceptions import ItermarkError
-from . import ItermarkIndicator
+from . import ItermarkIndicator, ItermarkError
 
 
 class _ItermarkEngine:
@@ -20,43 +19,17 @@ class _ItermarkEngine:
     - active: Active item based off mark index. Read/write usage, type allowing
     """
 
+    # -------------------------------------------------------------------------
+    # Itermark Properties
+    # -------------------------------------------------------------------------
+
     # Note: Because all public functions use _ensure_loaded(), any internal
-    #  calls to these functions will cause recursion. Code should only call
+    # calls to these functions will cause recursion. Code should only call
     #  private functions
 
     _mark: int = None
     """Protected bookmark index; access via mark() so boundary checks are 
     run. When there are no entries, _mark is set to None"""
-
-    """def __iter__(self):
-        return iter(self[1:-1])
-
-    def __str__(self):
-        return str(self[1:-1])"""
-
-    """def __setitem__(self, key, value):
-        if key == 0:
-            raise ItermarkError("Cannot change or remove Itermark Indicator!")
-        super().__setitem__(key, value)"""
-
-    def __setitem__(self, key, value):
-        if key == 0:
-            if value != ItermarkIndicator:
-                raise ItermarkError(
-                    "Cannot change or remove Itermark Indicator!")
-        super().__setitem__(key, value)
-
-    def __next__(self):
-        """Emulates default list_iterator next. When reaches end of list,
-        throws StopIteration, and notifies user to reset .mark"""
-        try:
-            self._ensure_loaded()
-            active_to_return = self.active
-            self._mark += 1
-        except IndexError:
-            raise StopIteration('End of itermark iteration. set mark to -1 '
-                                 'or reset to 1') from None
-        return active_to_return
 
     @property
     def mark(self) -> Optional[int]:
@@ -72,7 +45,7 @@ class _ItermarkEngine:
     @mark.setter
     def mark(self, new_mark: int):
         """
-        Attempts to set active mark. Raises IndexError if new_mark is out of bounds
+        Attempts to set active mark. Raises IndexError if new_mark is OOB
 
         Arguments:
             new_mark:
@@ -82,17 +55,12 @@ class _ItermarkEngine:
         mark_to_set = self._calc_if_negative_index(new_mark)
         # Preserve orig new_mark. in case of OOB, raise IndexErr w/ given mark
 
-        # If negative index, calculate
-        # if mark_to_set == 0:
-            # raise ItermarkError('ItermarkIndicator at 0, cannot set '
-                                # '.mark to 0!')
         if mark_to_set not in self._mark_range:
             raise IndexError(f"Given mark [{new_mark}] outside itermark index "
                              f"range 1-{self._mark_range[-1]}")
 
         self._mark = mark_to_set
         self._ensure_loaded()
-
 
     @property
     def active(self) -> any:
@@ -116,7 +84,32 @@ class _ItermarkEngine:
         self._ensure_loaded()
         self[self._mark] = val
 
+    # -------------------------------------------------------------------------
+    # Default item overrides/extensions
+    # -------------------------------------------------------------------------
+
+    def __setitem__(self, key, value):
+        if key == 0:
+            if value != ItermarkIndicator:
+                raise ItermarkError(
+                    "Cannot change or remove Itermark Indicator!")
+        super().__setitem__(key, value)
+
+    def __next__(self):
+        """Emulates iterator next while preserving .mark. When reaches end of
+        list, throws StopIteration and notifies user to reset .mark"""
+        try:
+            self._ensure_loaded()
+            active_to_return = self.active
+            self._mark += 1
+        except IndexError:
+            raise StopIteration('End of itermark iteration. set mark to -1 '
+                                 'or reset to 1') from None
+        return active_to_return
+
+    # -------------------------------------------------------------------------
     # _ItermarkEngine maintenance
+    # -------------------------------------------------------------------------
 
     def _ensure_loaded(self):
         """Ensures items exist for itermark to track. If none,
@@ -128,13 +121,6 @@ class _ItermarkEngine:
         else:
             self._deactivate_mark()
             raise ItermarkError("No items for itermark to track!")
-
-    # def _ensure_placeholder_exists(self):
-        # """Due to quirk in assignment operators, """
-        # return
-        # if not isinstance(self[0], ItermarkIndicator):
-            # self.insert(0, _ItermarkPlaceHolder())
-            # self.insert(0, ItermarkIndicator)
 
     @property
     def _is_loaded(self) -> bool:
@@ -150,10 +136,6 @@ class _ItermarkEngine:
         """Current acceptable bookmark range, using builtin obj's range and
         __len__. Excludes 0, as 0 is ItermarkIndicator"""
         return range(1, self.__len__())
-
-    def _deactivate_mark(self):
-        """Used to disable callable attributes, if iterable becomes empty"""
-        self._mark = None
 
     def _calc_if_negative_index(self, mark_to_calc: int) -> int:
         """Converts a negative index to actual index"""
@@ -171,3 +153,6 @@ class _ItermarkEngine:
         elif self._mark not in self._mark_range:
             raise IndexError(f"Mark [{self._mark}] out of bounds [1-"
                              f"{self._mark_range[-1]}]")
+    def _deactivate_mark(self):
+        """Used to disable callable attributes, if iterable becomes empty"""
+        self._mark = None
