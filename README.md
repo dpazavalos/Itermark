@@ -26,8 +26,8 @@ IndexError: Given mark [6] outside index range 1-5
 >>> print(iterlist)
 ['one', 'two', 'three', 'four']
 ```
-The Itermark extension adds properties .mark and .active (.activekey
- @ .activeval for dicts), and an IteratorIndicator object inserted at the
+The Itermark extension adds properties .mark and .active (and .activekey/
+ .activeval for dicts), and an IteratorIndicator object inserted at the
   beginning of the iterable. Itermark properties are disabled if underlying
    iterable is empty  
 

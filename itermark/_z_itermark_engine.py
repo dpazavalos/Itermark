@@ -37,6 +37,11 @@ class _ItermarkEngine:
     def __str__(self):
         return str(self[1:-1])"""
 
+    def __setitem__(self, key, value):
+        if key == 0:
+            raise ItermarkError("Cannot change or remove Itermark Indicator!")
+        super().__setitem__(key, value)
+
     def __next__(self):
         """Emulates default list_iterator next. When reaches end of list,
         throws StopIteration, and notifies user to reset .mark"""

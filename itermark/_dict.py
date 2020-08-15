@@ -5,7 +5,7 @@ from ._z_itermark_engine import _ItermarkEngine, ItermarkIndicator, \
 
 # Note that this is designed around 3.6+'s insertion ordered dictionaries
 # Recommend a Collections.OrderedDict for earlier implementations
-class ItermarkDict(dict, _ItermarkEngine):
+class ItermarkDict(_ItermarkEngine, dict):
     """_ItermarkEngine dict object, extending default dict functionality"""
 
     def _ensure_placeholder_exists(self):
