@@ -30,6 +30,7 @@ class _ItermarkEngine:
     _mark: int = None
     """Protected bookmark index; access via mark() so boundary checks are 
     run. When there are no entries, _mark is set to None"""
+    _mark_default = 1
 
     @property
     def mark(self) -> Optional[int]:
@@ -147,7 +148,7 @@ class _ItermarkEngine:
         """Current iterator has items, activate itermark. Checks for itermark
          iterator shortened and old mark too high and'll raise IndexError"""
         if not self._mark:
-            self._mark = 1
+            self._mark = self._mark_default
         elif self._mark not in self._mark_range:
             raise IndexError(f"Mark [{self._mark}] out of bounds [1-"
                              f"{self._mark_range[-1]}]")

@@ -42,7 +42,7 @@ def Itermark(iterable):
         return ItermarkList(new_list)
 
     elif isinstance(iterable, dict):
-        new_dict = {0: ItermarkIndicator}
+        new_dict = {ItermarkIndicator: ItermarkIndicator}
         new_dict.update(iterable)
 
         if type(iterable) == type(OrderedDict()):
