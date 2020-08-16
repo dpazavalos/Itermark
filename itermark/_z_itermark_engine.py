@@ -1,23 +1,36 @@
 """
 Base engine for itermark functionality.
 
-Extension for iterable data types; adds boundwise bookmark iteration, enabling active item
-tracking/setting (type allowing)
+Extension for iterable data types; adds boundwise bookmark iteration, enabling
+active item tracking/setting (type allowing)
 """
 
 from typing import Optional
+from . import ItermarkIndicator, ItermarkError
 
 
-class ItermarkEngine:
+class _ItermarkEngine:
     """
-    Base engine, inhereted by type specific implementations
+    Itermark functions, to build on top of default iterable object types
+    Type specifics inherit and supplement with any needed functions/properties
 
-    - mark: Bookmark index of underlying iterable. Supports direct and operator assignment
-    - active: Active item, based off current mark index. Read/write usage, type allowing
+    - mark: Bookmark index of underlying iterable. Supports direct and
+    operator assignment
+    - active: Active item based off mark index. Read/write usage, type allowing
     """
 
-    _mark = None
-    """Protected bookmark index; access via property mark so boundary checks are run"""
+    # -------------------------------------------------------------------------
+    # Itermark Properties
+    # -------------------------------------------------------------------------
+
+    # Note: Because all public functions use _ensure_loaded(), any internal
+    # calls to these functions will cause recursion. Code should only call
+    #  private functions
+
+    _mark: int = None
+    """Protected bookmark index; access via mark() so boundary checks are 
+    run. When there are no entries, _mark is set to None"""
+    _mark_default = 1
 
     @property
     def mark(self) -> Optional[int]:
@@ -27,32 +40,28 @@ class ItermarkEngine:
         Returns:
                 Active bookmark index, or None if len=0
         """
-        if self._is_loaded:
-            return self._mark
-        return None
+        self._ensure_loaded()
+        return self._mark
 
     @mark.setter
     def mark(self, new_mark: int):
         """
-        Attempts to set active mark. Raises IndexError if new_mark is out of bounds
+        Attempts to set active mark. Raises IndexError if new_mark is OOB
 
         Arguments:
             new_mark:
                 Desired new bookmark index
         """
 
-        if self._is_loaded:
-            if not isinstance(new_mark, int):
-                raise TypeError(f"marklist index must be integer, not {str(type(new_mark))}")
+        mark_to_set = self._calc_if_negative_index(new_mark)
+        # Preserve orig new_mark. in case of OOB, raise IndexErr w/ given mark
 
-            # No negatives. -= 1 fouls up indexing when _mark is 0
-            if new_mark < 0:
-                self.markstart()
-            # Max length check
-            elif self._mark_is_over_bounds(new_mark):
-                self.markend()
-            else:
-                self._mark = new_mark
+        if mark_to_set not in self._mark_range:
+            raise IndexError(f"Given mark [{new_mark}] outside itermark index "
+                             f"range 1-{self._mark_range[-1]}")
+
+        self._mark = mark_to_set
+        self._ensure_loaded()
 
     @property
     def active(self) -> any:
@@ -62,9 +71,8 @@ class ItermarkEngine:
         Returns:
                 Active item, or None if len=0
         """
-        if self._is_loaded:
-            return self[self._mark]
-        return None
+        self._ensure_loaded()
+        return self[self._mark]
 
     @active.setter
     def active(self, val: any):
@@ -74,66 +82,76 @@ class ItermarkEngine:
         Args:
             val: new value for current active item
         """
-        if self._is_loaded:
-            self[self._mark] = val
+        self._ensure_loaded()
+        self[self._mark] = val
 
-    def markend(self):
-        """
-        Set mark to end value. Mark will never go above upper bound, but without calling len() user may not
-        know what that upper bound is. Use .markend() to reliably set mark to upper bound
-        """
-        if self._is_loaded:
-            self.mark = self.__len__()
+    # -------------------------------------------------------------------------
+    # Default item overrides/extensions
+    # -------------------------------------------------------------------------
 
-    # ItermarkEngine maintenance
+    def __setitem__(self, key, value):
+        if key == 0:
+            if value != ItermarkIndicator:
+                raise ItermarkError(
+                    "Cannot change or remove Itermark Indicator!")
+        super().__setitem__(key, value)
+
+    def __next__(self):
+        """Emulates iterator next while preserving .mark. When reaches end of
+        list, throws StopIteration and notifies user to reset .mark"""
+        try:
+            self._ensure_loaded()
+            active_to_return = self.active
+            self._mark += 1
+        except IndexError:
+            raise StopIteration('End of itermark iteration. set mark to -1 '
+                                 'or reset to 1') from None
+        return active_to_return
+
+    # -------------------------------------------------------------------------
+    # _ItermarkEngine maintenance
+    # -------------------------------------------------------------------------
+
+    def _ensure_loaded(self):
+        """Ensures items exist for itermark to track. If none,
+        throws excpetion ItermarkNonActive.  All public functions call this
+         first; calling itermark funcs on non-existent self throws errors"""
+        # self._ensure_placeholder_exists()
+        if self._is_loaded:
+            self._activate_mark()
+        else:
+            self._deactivate_mark()
+            raise ItermarkError("No items for itermark to track!")
 
     @property
     def _is_loaded(self) -> bool:
-        """Property to shutdown itermark functions if iterable is empty"""
-        if self.__len__() == 0:
-            self._deactivate_mark()
+        """bool representing if items exist in self, using __len__ check.
+        Seperate from _ensure_loaded so maint funcs can run a check without
+        de/activating or causing recursive loop"""
+        if self.__len__() <= 1:
             return False
-        self._activate_mark()
         return True
 
+    @property
+    def _mark_range(self) -> range:
+        """Current acceptable bookmark range, using builtin obj's range and
+        __len__. Excludes 0, as 0 is ItermarkIndicator"""
+        return range(1, self.__len__())
+
+    def _calc_if_negative_index(self, mark_to_calc: int) -> int:
+        """Converts a negative index to actual index"""
+        if mark_to_calc < 0:
+            return self.__len__() + mark_to_calc
+        return mark_to_calc
+
+    def _activate_mark(self):
+        """Current iterator has items, activate itermark. Checks for itermark
+         iterator shortened and old mark too high and'll raise IndexError"""
+        if not self._mark:
+            self._mark = self._mark_default
+        elif self._mark not in self._mark_range:
+            raise IndexError(f"Mark [{self._mark}] out of bounds [1-"
+                             f"{self._mark_range[-1]}]")
     def _deactivate_mark(self):
         """Used to disable callable attributes, if iterable becomes empty"""
         self._mark = None
-        # .active is never stored, instead called from _mark
-
-    def _activate_mark(self):
-        """Ensures _ndx is activated and within bounds. Iterable is assumed non-empty"""
-        if not self._mark or self._mark < 0:
-            self._mark = 0
-        if self._mark_is_over_bounds():
-            self.markend()
-
-    def _mark_is_over_bounds(self, mark_check=None):
-        """
-        Funnel function, verify if mark_check is within bounds of upper length. Default self._mark
-        Typically followed by self.markend()
-
-        Args:
-            mark_check: Mark to check. Defaults to self._mark, but can be passed an externally given
-            mark instead
-        Returns:
-            Bool, indicating if mark is >= self.__len__
-        """
-        if not mark_check:
-            mark_check = self._mark
-        return mark_check >= self.__len__()
-
-    # Hollow references, to be overwritten by each subtypes' specific version.
-    # ItermarkEngine functions will then reference the actual function
-
-    def __len__(self):
-        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
-
-    def __iter__(self):
-        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
-
-    def __getitem__(self):
-        """Hollow reference. Itermarks use default types first, so this will not overwrite"""
-
-    def __setitem__(self):
-        """Hollow reference. Itermarks use default types first, so this will not overwrite"""

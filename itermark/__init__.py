@@ -5,14 +5,24 @@ Enables iterable passing while preserving bookmarks
 from collections import OrderedDict
 
 
+class ItermarkIndicator:
+    """Indication that item is itermark. Equipped on index 0"""
+
+
+class ItermarkError(Exception):
+    """Generic Exception for general Itermark engine usage"""
+
+
 def Itermark(iterable):
     """
     Extensions for iterable data types, enabling boudwise bookmarking and
     active item tracking/ and setting (type allowing)
     Whole itermark obj can be passed, preserving bookmark
 
-    - mark: Bookmark index of underlying iterable. Supports direct and operator assignment
-    - active: Active item, based off current mark index. Allows read/write usage (type allowing)
+    - mark: Bookmark index. Supports direct and operator assignment where
+    allowed
+    - active: Active item, based off current mark. Allows read/write where
+    allowed
 
     Args:
         iterable: Iterable object type, to add Itermark functionality to
@@ -20,93 +30,33 @@ def Itermark(iterable):
     Returns:
         Itermark object, matching the given iterable type
     """
+    # todo separate elif into functions
 
-    if isinstance(iterable, list):
+    if ItermarkIndicator in iterable:
+        # Why is user nesting Itermark obj? Stop that
+        return iterable
+
+    elif isinstance(iterable, list):
+        new_list = [ItermarkIndicator] + iterable
         from ._list import ItermarkList
-        return ItermarkList(iterable)
+        return ItermarkList(new_list)
 
-    elif type(iterable) == type(OrderedDict()):     # Type compares used to avoid issues with
-        from ._ordict import ItermarkOrDict         # Liskov Substitution Principle re dict types
-        return ItermarkOrDict(iterable)             # isinstance(OrderedDict(), dict) == True
-    # See commented out rough draft classful solution below, for possibly scalable solution
-    elif type(iterable) == type({}):    # standard dict
+    elif isinstance(iterable, dict):
+        new_dict = {ItermarkIndicator: ItermarkIndicator}
+        new_dict.update(iterable)
+
+        if type(iterable) == type(OrderedDict()):
+            # OrderedDict shows as instance of dict
+            from ._ordict import ItermarkOrDict
+            return ItermarkOrDict(new_dict)
+
         from ._dict import ItermarkDict
-        return ItermarkDict(iterable)
-
-    elif isinstance(iterable, set):
-        from ._set import ItermarkSet
-        return ItermarkSet(iterable)
-
-    elif isinstance(iterable, str):
-        from ._str import ItermarkStr
-        return ItermarkStr(iterable)
+        return ItermarkDict(new_dict)
 
     elif isinstance(iterable, tuple):
-        from ._tuple import     ItermarkTuple
-        return ItermarkTuple
+        new_tup = (ItermarkIndicator, ) + iterable
+        from ._tuple import ItermarkTuple
+        return ItermarkTuple(new_tup)
 
     else:
         raise TypeError(f"Currently unsupported type! \n {type(iterable)}")
-
-
-
-# from typing import Dict
-# class _Itermark:
-
-    # def __init__(self, iterable):
-        # ...
-
-
-    # def __new__(self, iterable):
-        # self.itermark_maker: Dict[type, property] = {
-            # type([]):               self.return_itermark_list,
-            # type({}):               self.return_itermark_dict,
-            # type(set()):            'set',
-            # type(''):               'string',
-            # type(()):               'tuple',
-            # type(OrderedDict()):    'od',
-        # }
-        # # type handler dict adds overhead, but removes issues with Liskov Substitution Principle,
-        # # (where child classes are substitutable for their parents)
-
-        # try:
-            # self.iterable = iterable
-            # print(type(self.iterable))
-            # print(type(list))
-            # print(type(self.iterable) == type(list))
-            # input()
-            # return self.itermark_maker[type(self.iterable)]
-        # except KeyError:
-            # raise TypeError(f"Currently unsupported type! \n {type(iterable)}")
-
-    # @property
-    # def return_itermark_list(self):
-        # from ._list import ItermarkList
-        # print('imported list')
-        # return ItermarkList(self.iterable)
-
-    # @property
-    # def return_itermark_dict(self):
-        # from ._dict import ItermarkDict
-        # print('imported dict')
-        # return ItermarkDict(self.iterable)
-
-    # @property
-    # def return_itermark_ordict(self):
-        # from ._ordict import ItermarkOrDict
-        # return ItermarkOrDict(self.iterable)
-
-    # @property
-    # def return_itermark_set(self):
-        # from ._set import ItermarkSet
-        # return ItermarkSet(self.iterable)
-
-    # @property
-    # def return_itermark_str(self):
-        # from ._str import ItermarkStr
-        # return ItermarkStr(self.iterable)
-
-    # @property
-    # def return_itermark_tup(self):
-        # from ._tuple import ItermarkTuple
-        # return ItermarkTuple
