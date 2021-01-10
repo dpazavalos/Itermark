@@ -2,11 +2,12 @@ from ._z_itermark_engine import _ItermarkEngine
 from . import ItermarkIndicator, ItermarkError
 
 
-class ItermarkList(_ItermarkEngine, list, ):
+class ItermarkList(_ItermarkEngine, list):
     """_ItermarkEngine string object, Adding bookmarking functionality"""
 
     def clear(self) -> None:
         """ Remove all items from list, excluding ItermarkIndicator """
+        # remove end -> start + 1. Preserves indicator
         for ndx in range(self.__len__() - 1, 0, -1):
             self.__delitem__(ndx)
 
