@@ -24,8 +24,10 @@ class _ItermarkEngine:
     # -------------------------------------------------------------------------
 
     # Note: Because all public functions use _ensure_loaded(), any internal
-    # calls to these functions will cause recursion. Code should only call
+    #  calls to these functions will cause recursion. Code should only call
     #  private functions
+    # Note: There are calls to 'undefined' dunders, these resolve by type
+    # specific itermarks inheriting respective default
 
     _mark: int = None
     """Protected bookmark index; access via mark() so boundary checks are 
@@ -72,7 +74,7 @@ class _ItermarkEngine:
                 Active item, or None if len=0
         """
         self._ensure_loaded()
-        return self[self._mark]
+        return self[self._mark]  # use built in __getitem__?
 
     @active.setter
     def active(self, val: any):
@@ -139,7 +141,9 @@ class _ItermarkEngine:
         return range(1, self.__len__())
 
     def _calc_if_negative_index(self, mark_to_calc: int) -> int:
-        """Converts a negative index to actual index"""
+        """Used to enforce expected behavior re Python's negative numbers to 
+        index from end, while ignoring itermark indicator"""
+        # without this -= acts funky and loops back to end
         if mark_to_calc < 0:
             return self.__len__() + mark_to_calc
         return mark_to_calc
@@ -152,6 +156,7 @@ class _ItermarkEngine:
         elif self._mark not in self._mark_range:
             raise IndexError(f"Mark [{self._mark}] out of bounds [1-"
                              f"{self._mark_range[-1]}]")
+
     def _deactivate_mark(self):
         """Used to disable callable attributes, if iterable becomes empty"""
         self._mark = None
