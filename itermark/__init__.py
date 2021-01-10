@@ -46,7 +46,7 @@ def Itermark(iterable):
         new_dict.update(iterable)
 
         if type(iterable) == type(OrderedDict()):
-            # OrderedDict shows as instance of dict
+            # do not use isinstance(), OrderedDict shows as instance of dict
             from ._ordict import ItermarkOrDict
             return ItermarkOrDict(new_dict)
 
