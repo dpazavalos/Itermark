@@ -6,7 +6,7 @@ Ideal for 'paging' through lists/dicts/tuples
 
 ## Installation
 ```
-pip install itermark
+pip install -i https://test.pypi.org/simple/ itermark-dpazavalos
 ```
 
 ## Usage
